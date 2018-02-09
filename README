@@ -19,7 +19,7 @@ Quick Start - for those that don't like to read
 	2- Put the file on a webserver.  HTTPS strongly recommended for security.
 	3- Install the client package on your test computer.
 	4- Configure it to point to your server with the ExampleUpdate.plist on it, using defaults command
-			defaults write /Library/Preferences/edu.mit.ll.updateTool.plist configURL -string "https://YourTestServer.com/ExampleUpdate.plist
+			defaults write /Library/Preferences/edu.mit.ll.updateTool.plist configURL -string "https://YourTestServer.com/ExampleUpdate.plist"
 	5- Force App Updates to scan for new patches
 			sudo /usr/local/updateTool/ScanForUpdates.sh
 	6- Open /Applications/Utilities/App Update Tool.app to view available patches and apply. 
@@ -108,3 +108,7 @@ The Update File is compared to installed applications to see what is pending eve
 
 Known Issues:
 Installing causes an 'Updates Complete!' message to appear.  It goes away after 10 seconds.  
+
+To Do: 
+- Add SHA flag to config file so users can't turn it off.
+- Add cleaner pause update options.
