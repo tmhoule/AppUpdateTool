@@ -1,0 +1,25 @@
+#!/bin/sh
+
+#copy Bitbar script to the right directory if directory exists
+
+bitBarDir=$(defaults read /Library/Preferences/com.matryer.BitBar.plist pluginsDirectory)
+if [ ! -z "$bitBarDir" ]; then
+   cp /usr/local/updateTool/bitbar/updateToolStatus.5m.sh $bitBarDir
+fi
+
+launchctl load -w /Library/LaunchDaemons/edu.mit.ll.updateTool*
+killall jamfHelper
+
+bitBarApp=$(/usr/bin/mdfind "kind:applications" bitbar|head -1)
+
+if [ -f "$bitBarApp/Contents/MacOS/BitBar" ] && [ -d $bitBarDir ]; then
+    echo "1"
+    open -g bitbar://refreshPlugin?name=*
+    if [ $? -ne 0 ]; then
+        echo "2"
+        killall BitBar
+        open -g bitbar://refreshPlugin?name=*
+    fi
+fi
+
+exit 0

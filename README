@@ -1,0 +1,110 @@
+Overview
+The App Update Tool will download a config file from a web server and determine what applications should be updated based on those rules.  Apple OS updates will also be added to that list and automatically installed on the next Thursday evening (configurable). 
+
+Benefits-
+- Updates are offered to users with simple suggestions to install the update until the Due Date.  Once the due date passes, the update is installed after the user gets a warning countdown. 
+- Updates are cached locally before being offered to users. this prevents a user from clicking Apply, then needing to wait for an update to be downloaded.  
+- No dependency on JSS or other management system. While it's easier to deploy with a management system, you can use this tool without one. 
+- Allows you to have different channels for testing and production distribution of patches. 
+- Allows patches to be installed by non-admin users.
+
+NOTE: BitBar: App Update Tool leverages BitBar for notifications to the user.  It is optional, but strongly recommended that you first install BitBar (http://getbitbar.com) on all clients and configure the BitBar plugins directory using 
+	defaults write /Library/Preferences/com.matryer.BitBar.plist pluginsDirectory -string "/usr/local/updateTool/bitbar"  (or the directory of your choice). 
+If you have this directory configured before installing the App Update client, App Update Tool will be configured to use BitBar for notifications.  If you'd like, you can also limit user configuration of BitBar
+	defaults write /Library/Preferences/com.matryer.BitBar.plist userConfigDisabled -bool YES
+
+
+Quick Start - for those that don't like to read
+	1- Edit ExampleUpdate.plist using Xcode with the applications you'd like to keep updated.  See Section below for required and optional elements.
+	2- Put the file on a webserver.  HTTPS strongly recommended for security.
+	3- Install the client package on your test computer.
+	4- Configure it to point to your server with the ExampleUpdate.plist on it, using defaults command
+			defaults write /Library/Preferences/edu.mit.ll.updateTool.plist configURL -string "https://YourTestServer.com/ExampleUpdate.plist
+	5- Force App Updates to scan for new patches
+			sudo /usr/local/updateTool/ScanForUpdates.sh
+	6- Open /Applications/Utilities/App Update Tool.app to view available patches and apply. 
+			
+			
+			
+Slow Start - to do things right and get the details.
+
+The Update File
+The Update File is the starting point.  It lists all applications that should be updated.  You can have multiple versions of this file - for Development, Pilot, and Production deployment of applications. Or for different departments. Create a copy of the file with a different name. You'll configure the computer later to get a different file.
+
+You can view the file with the defaults command, but it's best to edit it with Xcode.  A future version of the App Update Tool will include tools for editing this file.  Open the file with XCode.
+Applications come from either your own server, or from Apple.  Most of  your entries will be applicaitons you manage such as Firefox, FlashPlayer, Microsoft Word.  Almost any application that has Contents/Info.plist can be updated.  
+
+Required Keys:
+Source - String - the URL to where the package can be found. Do not include the package
+sha256 - String - The SHA of the package. In terminal, type "shasum -a256 /path/to/app.pkg" and you'll get it.
+DueDate - Date - App will be automatically installed after this date if not already installed
+LatestVersion - string - the version number you are distributing.  ONLY NUMBERS and dots.  No letters allowed.
+Path - String - Path to the application bundle. Apps not in this path will not be patched.
+PackageName - String - the package file to be downloaded from the Source above.  
+
+Optional Keys:
+Reboot  - Boolean  - Should the computer be rebooted after installing this package
+MinimumVersion - String - Ignore an app (don't patch) if it is below this version. You might want to keep pathetically old versions of an app around. 
+Note - String - Add a note to any entry.
+
+About the Version:
+Note the path you use above. You should be able to type the path and append '/Contents/Info.plist CFBundleShortVersionString' and get a version.
+			defaults read Path/Contents/Info.plist CFBundleShortVersionString
+If you don't get a number back, you're not going to be able to update that application.  If an application has a letter in the version, you won't be able to update it 
+			GOOD# defaults read /Library/Internet\ Plug-Ins/Flash\ Player.plugin/Contents/Info.plist CFBundleShortVersionString
+			28.0.0.161
+			
+			BAD# defaults read /Library/Internet\ Plug-Ins/JavaAppletPlugin.plugin/Contents/Info.plist CFBundleShortVersionString
+			Java 8 Update 151 build 12
+Yea Adobe, screw you Oracle?
+
+Apple Provided Updates
+The computer will check Apple Software Update for any pending packages and automatically set them to be due on the next Thursday 11:30pm.  You can override that due date by creating an entry with the name of the update, a source of 'Apple', and the DueDate of your choice.  
+
+Save the SHA of the plist 
+Creating a SHA checksum allows App Update Tool to confirm the file was downloaded in full and has not been modified. This step is optional, but provides enhanced security and safety.  Putting the SHA file on a different server forces an attacker to compromise two systems before infiltrating your Macs.
+Once your update file is ready to go, calculate a sha256 for the file and save it in another file. 
+	bash-3.2# shasum -a256 ExampleUpdate.plist
+	17c72af0bd9a86e9a1f522602af659e89eaa75aab079eb6ab3b22b635aaf373d  ExampleUpdate.plist
+	bash-3.2# echo "17c72af0bd9a86e9a1f522602af659e89eaa75aab079eb6ab3b22b635aaf373d" > ExampleUpdate.sha256.txt
+The client will need to be configured with the URL of the Update File and the URL of the SHA file. 
+	
+Serving the PLIST file
+Put the plist and the sha on your web server.  For enhanced security, they can be on different servers.  Depending on your webserver, you may need to define MIME types allowed.  You might want to test the URL in a web browser.  Using a Mac as my webserver required no extra configuration. Enable the Mac's web server and put the plist and sha in /Library/WebServer/Documents/
+	sudo apachectl start
+
+
+
+Configure the App Update Client
+Install the client package on your test computer.  The enter the configURL to your update plist. 
+			defaults write /Library/Preferences/edu.mit.ll.updateTool.plist configURL -string "https://YourTestServer.com/ExampleUpdate.plist
+If you are using a SHA verification of the config file, tell the client to use a SHA checksum. 
+			defaults write /Library/Preferences/edu.mit.ll.updateTool.plist configSHAURL -string "https://YourTestServer.com/ExampleUpdate.sha256.txt"
+
+The update tool will process the plist three times a day to see if updates are required.  You can force it to run with 
+			sudo /usr/local/updateTool/ScanForUpdates.sh
+To view pending updates, open /Applications/Utilites/App Update Tool.app.   You can also use that to install pending updates.  If an update is overdue, the computer will alert you. Current the overdue scans run every 2400 seconds. 
+
+
+Pausing Updates
+App Update Tool looks for a directory named /tmp/myscript.lock before taking any action.  If it sees that, it things that an update is already in progress so takes no further action.  A reboot deletes that file.  Manually creating that directory has the effect of stopping all updates.  This is useful if a user has a pending deadline or critical work that cannot be interrupted with an approaching Due Date.  
+			mkdir /tmp/myscript.lock   #Stops further actions from starting
+			sudo rm -rf /tmp/myscript.lock    #removes the directory and allows updates to begin again.
+			
+
+UnPatched Apps
+Applications are identified and patched only if they exist at the path noted in the config file.  If a user puts a copy of an application on their desktop, or renames the application, it won't be patched.  However other copies of the application are identified and a list saved in /usr/local/updateTool/unpatchedAppList.txt.   The list is formatted to be appended to the BitBar output but is otherwise unused at this point.  A future version of this application patch an application regardless of location/name on the hard drive.  
+		
+		
+Customizing
+Apple Due Dates
+Currently, Any available Apple OS update is due on the next available Thursday, 11:30pm.  So if you release an Apple update on Thursday morning, it'll be due that night.  If the update is released on Friday morning, it'll be due in almost a week.  You can change that behavior by editing the 'next week' line in ScanForUdpates.sh  (date -v+thu "+%a %b %d 23:50:00 EST %Y")
+
+The App Update Tool GUI application will pop open if there is a pending update every 3 hours (10800 seconds).  Edit /Library/LaunchDaemons/edu.mit.ll.updateToolKickerGUI.plist to change that setting. 
+
+The Update File is compared to installed applications to see what is pending every 7 hours. You can edit that in /Library/LaunchDaemons/edu.mit.ll.updateToolScanner.plist
+
+
+
+Known Issues:
+Installing causes an 'Updates Complete!' message to appear.  It goes away after 10 seconds.  
