@@ -10,7 +10,7 @@ Benefits-
 
 NOTE: BitBar: App Update Tool leverages BitBar for notifications to the user.  It is optional, but strongly recommended that you first install BitBar (http://getbitbar.com) on all clients and configure the BitBar plugins directory using 
 	defaults write /Library/Preferences/com.matryer.BitBar.plist pluginsDirectory -string "/usr/local/updateTool/bitbar"  (or the directory of your choice). 
-If you have this directory configured before installing the App Update client, App Update Tool will be configured to use BitBar for notifications.  If you'd like, you can also limit user configuration of BitBar
+If you have Bitbar configured before installing the App Update client (any plugins directory), App Update Tool will be configured to use BitBar for notifications.  If you'd like, you can also limit user configuration of BitBar
 	defaults write /Library/Preferences/com.matryer.BitBar.plist userConfigDisabled -bool YES
 
 
