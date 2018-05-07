@@ -105,6 +105,7 @@ for oneFileWithWhiteSpace in $fileList; do
 	logger "LLUpdate:installing: $policy via $source"
 	if [ $source == "Apple" ]; then
 	    /usr/sbin/softwareupdate -i "$policy"
+            /usr/sbin/softwareupdate -i "$policy " #because fuck apple
 	elif [ $source == "JSS" ]; then
 	     pkgName=$(/usr/libexec/PlistBuddy -c "print :$policy" /usr/local/updateTool/ApplicationUpdateControl.plist |awk '/PackageName/ {print $3}')
 	     installer -pkg /usr/local/updateTool/cache/$pkgName -target /
