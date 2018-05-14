@@ -225,7 +225,7 @@ mkdir -p /usr/local/updateTool
 
 #get config file containing updates from server
 echo "LLUpdate: Getting config $configURL"
-if [ ! -z $configURL ]; then
+if [ ! -z "$configURL" ]; then
     rm /usr/local/updateTool/ApplicationUpdateControl.plist
     echo "Getting config file $configURL."
     curl -so /usr/local/updateTool/ApplicationUpdateControl.plist $configURL
@@ -235,20 +235,20 @@ if [ ! -z $configURL ]; then
 	thisSha=$(shasum -a 256 /usr/local/updateTool/ApplicationUpdateControl.plist |awk '{print $1}')
 	shouldBSha=$(cat /usr/local/updateTool/ApplicationUpdateControl.plist.sha256)
 	if [ ! "$thisSha" == "$shouldBSha" ]; then
-	    echo "LLUpdate: ConfigFile SHA error. Exiting."
+	    echo "UpdateRabbit: ConfigFile SHA error. Exiting."
 	    exit 1
 	else
-	    echo "LLUpdate: SHA is valid as expected"
+	    echo "UpdateRabbit: SHA is valid as expected"
 	fi
     else
-	echo "LLUpdate: No SHA Check for $configURL available"
+	echo "UpdateRabbit: No SHA Check for $configURL available"
     fi
     if [ ! -f /usr/local/updateTool/ApplicationUpdateControl.plist ]; then
 	echo "No config file available.  Exiting."
 	exit 1
     fi
 else
-    echo "Error: No ConfigURL. Does /Library/Preferences/edu.mit.ll.updateTool.plist configURL  exist?"
+    echo "UpdateRabbit: Error: No ConfigURL. Does /Library/Preferences/edu.mit.ll.updateTool.plist configURL  exist?"
     exit 1
 fi
 
