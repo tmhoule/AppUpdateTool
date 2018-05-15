@@ -162,8 +162,10 @@ checkAppleUpdates(){
                     doINeedThisUpdate=$(grep "$line" /tmp/appleSWupdates.txt)
                     #if null, then delete this line  
                     if [ -z "$doINeedThisUpdate" ]; then
-			echo "LLUpdate: Removing $line because I don't need that on this computer"
+			echo "UpdateRabbit: Removing $line because I don't need that on this computer"
 			/usr/libexec/PlistBuddy -c "Delete :\"$line\"" /usr/local/updateTool/ApplicationUpdateControl.plist
+		    else
+			echo "UpdateRabbit: I need $line."
                     fi
                 fi
             done <<< "$policiesToCheck"
