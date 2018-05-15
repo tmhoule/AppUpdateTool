@@ -18,7 +18,7 @@ CheckForNetwork(){
 }
 
 writeToLog(){
-    logger "LLUpdate: $1"
+    logger "UpdateRabbit: $1"
 }
 
 
@@ -81,5 +81,3 @@ if [ -f $bitBarApp/Contents/MacOS/BitBar ] && [ -d $bitBarPath ]; then
 	open -g bitbar://refreshPlugin?name=*
     fi    
 fi
-
-
