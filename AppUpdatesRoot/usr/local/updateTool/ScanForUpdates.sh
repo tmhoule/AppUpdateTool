@@ -162,10 +162,8 @@ checkAppleUpdates(){
                     doINeedThisUpdate=$(grep "$line" /tmp/appleSWupdates.txt)
                     #if null, then delete this line  
                     if [ -z "$doINeedThisUpdate" ]; then
-			echo "UpdateRabbit: Removing $line because I don't need that on this computer"
+			echo "LLUpdate: Removing $line because I don't need that on this computer"
 			/usr/libexec/PlistBuddy -c "Delete :\"$line\"" /usr/local/updateTool/ApplicationUpdateControl.plist
-		    else
-			echo "UpdateRabbit: I need $line."
                     fi
                 fi
             done <<< "$policiesToCheck"
@@ -201,8 +199,21 @@ checkAppleUpdates(){
 		unset installBy
 		unset rebootNeeded
 	    done
-	    
+	else
+	    echo "Can't reach Apple Update Server - skipping changes"
        	fi
+    else
+	echo "No Apple Updates needed, removing all Apple source updates"
+	#no new updates needed means delete all Apple updates.
+	policiesToCheck=$(defaults read /usr/local/updateTool/ApplicationUpdateControl.plist |awk -F= '/{/{print $1}'|grep -v "{"|sed 's/"//g')
+        while read -r line; do
+                #Look to see if update is Apple Update.  If it is and it is NOT on our to-do list, delete it                                                               
+            policyICheck=$(/usr/libexec/PlistBuddy -c "Print :\"$line:Source\"" /usr/local/updateTool/ApplicationUpdateControl.plist)
+	    if [ "$policyICheck" == "Apple" ]; then
+                echo "LLUpdate: Removing $line because no apple updates needed."
+                /usr/libexec/PlistBuddy -c "Delete :\"$line\"" /usr/local/updateTool/ApplicationUpdateControl.plist
+            fi
+        done <<< "$policiesToCheck"
     fi
 }
 
@@ -226,7 +237,7 @@ rm /tmp/uptodateapps.txt
 mkdir -p /usr/local/updateTool
 
 #get config file containing updates from server
-echo "LLUpdate: Getting config $configURL"
+echo "UpdateRabbit: Getting config $configURL"
 if [ ! -z "$configURL" ]; then
     rm /usr/local/updateTool/ApplicationUpdateControl.plist
     echo "Getting config file $configURL."
