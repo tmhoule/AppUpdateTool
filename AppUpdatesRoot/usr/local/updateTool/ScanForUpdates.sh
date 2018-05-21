@@ -85,7 +85,7 @@ update(){
     
     #skip if not installed
     if [ ! -d "$appPath" ]; then
-	echo "LLUpdate: $appName is not installed. Couldn't find $appPath"
+	echo "UpdateRabbit: $appName is not installed. Couldn't find $appPath"
         /usr/libexec/PlistBuddy -c "Delete \":$appName\"" /usr/local/updateTool/ApplicationUpdateControl.plist
 	return
     fi
@@ -98,16 +98,16 @@ update(){
 	vercomp $minVers $latestVersion
 	minOK=$?
 	if [ $minOK == 1 ]; then
-	    echo "LLUpdate: $appName does not meet minimum version requirement. Skipping"
+	    echo "UpdateRabbit: $appName does not meet minimum version requirement. Skipping"
 	    return
 	else
-	    echo "LLUpdate: $appName passes minimum version requirement."
+	    echo "UpdateRabbit: $appName passes minimum version requirement."
 	fi
     fi
     
     #find out which is newer, server (listed below) or what is on client machine.
     if [[ $installedVersion =~ [A-z] ]] || [[ $installedVersion = "" ]]; then
-	echo "LLUpdate: ERROR - $appName version contains unsupported text: $versionString"
+	echo "UpdateRabbit: ERROR - $appName version contains unsupported text: $versionString"
 	return
     else
 	vercomp $latestVersion $installedVersion
@@ -117,17 +117,17 @@ update(){
     # If newer version is available, do this stuff.
     if [ $newerApp == 1 ]; then
         # An update is available. Record it for the GUI
-	echo "LLUpdate: update for $appName is available"
+	echo "UpdateRabbit: update for $appName is available"
     elif [ $newerApp == 2 ]; then
-	echo "LLUpdate: User has a newer version of $appName than on the server. Do Nothing"
+	echo "UpdateRabbit: User has a newer version of $appName than on the server. Do Nothing"
 	 /usr/libexec/PlistBuddy -c "Delete \":$appName\"" /usr/local/updateTool/ApplicationUpdateControl.plist
 	 echo "-- :white_check_mark: $appName $installedVersion | color=\$darklight"   >> /tmp/uptodateapps.txt
     elif [ $newerApp == 0 ]; then
-	echo "LLUpdate: User has same version of $appName as is installed.  Do Nothing."
+	echo "UpdateRabbit: User has same version of $appName as is installed.  Do Nothing."
 	/usr/libexec/PlistBuddy -c "Delete \":$appName\"" /usr/local/updateTool/ApplicationUpdateControl.plist
 	echo "-- :white_check_mark: $appName $installedVersion | color=\$darklight"   >> /tmp/uptodateapps.txt
     else
-	echo "LLUpdate: ERROR: Unknown Error occured comparing version on $appName.  You have $installedVersion and the latest is $latestVersion."
+	echo "UpdateRabbit: ERROR: Unknown Error occured comparing version on $appName.  You have $installedVersion and the latest is $latestVersion."
 	/usr/libexec/PlistBuddy -c "Delete \":$appName\"" /usr/local/updateTool/ApplicationUpdateControl.plist
     fi
     
@@ -162,7 +162,7 @@ checkAppleUpdates(){
                     doINeedThisUpdate=$(grep "$line" /tmp/appleSWupdates.txt)
                     #if null, then delete this line  
                     if [ -z "$doINeedThisUpdate" ]; then
-			echo "LLUpdate: Removing $line because I don't need that on this computer"
+			echo "UpdateRabbit: Removing $line because I don't need that on this computer"
 			/usr/libexec/PlistBuddy -c "Delete :\"$line\"" /usr/local/updateTool/ApplicationUpdateControl.plist
                     fi
                 fi
@@ -200,7 +200,7 @@ checkAppleUpdates(){
 		unset rebootNeeded
 	    done
 	else
-	    echo "Can't reach Apple Update Server - skipping changes"
+	    echo "UpdateRabbit: Can't reach Apple Update Server - skipping changes"
        	fi
     else
 	echo "No Apple Updates needed, removing all Apple source updates"
@@ -210,7 +210,7 @@ checkAppleUpdates(){
                 #Look to see if update is Apple Update.  If it is and it is NOT on our to-do list, delete it                                                               
             policyICheck=$(/usr/libexec/PlistBuddy -c "Print :\"$line:Source\"" /usr/local/updateTool/ApplicationUpdateControl.plist)
 	    if [ "$policyICheck" == "Apple" ]; then
-                echo "LLUpdate: Removing $line because no apple updates needed."
+                echo "UpdateRabbit: Removing $line because no apple updates needed."
                 /usr/libexec/PlistBuddy -c "Delete :\"$line\"" /usr/local/updateTool/ApplicationUpdateControl.plist
             fi
         done <<< "$policiesToCheck"

@@ -37,7 +37,7 @@ notify(){
     else
 	/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -title App_Updates -description "$message" -windowPosition ll -icon /Applications/Utilities/App\ Update\ Tool.app/Contents/Resources/softwareUpdate-256.png&
     fi
-    logger "LLUpdate: $message"
+    logger "UpdateRabbit: $message"
 }
 
 CheckForNetwork(){
@@ -74,7 +74,7 @@ CheckForNetwork
 
 #wait if another instance of script is running
 if [ -d /tmp/myscript.lock ]; then
-    logger "LLUpdate Another instance of the Installer is already running."
+    logger "UpdateRabbit: Another instance of the Installer is already running."
     exit 1
 fi
 
@@ -99,10 +99,10 @@ for oneFileWithWhiteSpace in $fileList; do
 	
 	if [[ "$rebootNeeded" == "rebootYes" ]]; then
 	    rebootflag="YES"
-	    logger "LLUpdate:Reboot Flag set: $policy"
+	    logger "UpdateRabbit: Reboot Flag set: $policy"
 	fi
 	
-	logger "LLUpdate:installing: $policy via $source"
+	logger "UpdateRabbit:installing: $policy via $source"
 	if [ $source == "Apple" ]; then
 	    /usr/sbin/softwareupdate -i "$policy"
 	    /usr/sbin/softwareupdate -i "$policy " #because fuck apple
@@ -110,7 +110,7 @@ for oneFileWithWhiteSpace in $fileList; do
 	     pkgName=$(/usr/libexec/PlistBuddy -c "print :$policy" /usr/local/updateTool/ApplicationUpdateControl.plist |awk '/PackageName/ {print $3}')
 	     installer -pkg /usr/local/updateTool/cache/$pkgName -target /
 	else
-	    logger "LLUpdate: ERROR: $source is not a recognized source"
+	    logger "UpdateRabbit: ERROR: $source is not a recognized source"
 	fi
     /usr/bin/pkill jamfHelper
     rm "/usr/local/updateTool/updateToolTouchFiles/$oneFileWithWhiteSpace"
@@ -126,14 +126,14 @@ rm -f /usr/local/updateTool/updateToolTouchFiles/*
 
 if [[ "$rebootflag" == "YES" ]]; then
     notify "Updates Complete- Rebooting...."
-    logger "LLUpdate:Updates complete.  Rebooting"
+    logger "UpdateRabbit: Updates complete.  Rebooting"
     sleep 4
     rm /usr/local/updateTool/updaterinfo.txt 
     rm /usr/local/updateTool/updaterinfo-holder.txt
     reboot
 else
     notify "Updates Complete!"
-    logger "LLUpdate:Updates Complete. Exiting"
+    logger "UpdateRabbit: Updates Complete. Exiting"
     rm /usr/local/updateTool/updaterinfo.txt
     rm /usr/local/updateTool/updaterinfo-holder.txt
     /usr/local/updateTool/ScanForUpdates.sh

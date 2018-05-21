@@ -9,8 +9,8 @@ bitBarPath=$(defaults read /Library/Preferences/com.matryer.BitBar.plist plugins
 bitBarApp=$(/usr/bin/mdfind "kind:applications" bitbar|head -1)
 
 writeToLog(){
-#    logger "LLUpdate: $1"
-    echo "LLUpdate: $1"
+#    logger "UpdateRabbit: $1"
+    echo "UpdateRabbit: $1"
 }
 
 CheckForNetwork(){
@@ -97,7 +97,7 @@ CheckForNetwork
 
 #quit if another instance of script is running
 if [ -d /tmp/myscript.lock ]; then
-    logger "LLUpdate Another instance of the Installer is already running."
+    writeToLog "Another instance of the Installer is already running."
     exit 1
 fi
 

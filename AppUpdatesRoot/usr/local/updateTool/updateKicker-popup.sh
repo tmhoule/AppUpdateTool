@@ -23,7 +23,7 @@ CheckForNetwork(){
 }
 
 writeToLog(){
-    echo "LLUpdate: $1"
+    echo "UpdateRabbit: $1"
 }
 
 checkFileForUpdates(){

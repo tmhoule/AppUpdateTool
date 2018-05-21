@@ -48,12 +48,12 @@ while read -r line; do
         thisSha=$(shasum -a 256 /usr/local/updateTool/cache/$pkgName | awk '{print $1}')
         shaPkg=$(/usr/libexec/PlistBuddy -c "Print :\"$line:sha256\"" /usr/local/updateTool/ApplicationUpdateControl.plist)
         if [ "$thisSha" != "$shaPkg" ]; then
-            echo "INVALID SHA. Downloading..."
+            echo "UpdateRabbit: INVALID SHA. Downloading..."
             rm /usr/local/updateTool/cache/$pkgName >/dev/null 2>&1
 	    curl -o /usr/local/updateTool/cache/downloading/$pkgName $source/$pkgName
             thisSha=$(shasum -a 256 /usr/local/updateTool/cache/downloading/$pkgName | awk '{print $1}')
 	    if [ "$thisSha" != "$shaPkg" ]; then
-		echo "LLUpdate: Error downloading $pkgName from $source. Will try again later."
+		echo "UpdateRabbit: Error downloading $pkgName from $source. Will try again later."
 		continue
 	    else
 		mv /usr/local/updateTool/cache/downloading/$pkgName /usr/local/updateTool/cache/$pkgName
